@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Figma Translation Plugin</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      font-size: 12px;
+      color: #333;
+      background: #fff;
+    }
+
+    h2 {
+      margin: 0 0 16px 0;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: inherit;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #18a0fb;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #18a0fb;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #0d8ce8;
+    }
+
+    button:active {
+      background: #0c7dd1;
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .info {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #666;
+    }
+
+    .error {
+      margin-top: 8px;
+      padding: 8px;
+      background: #fee;
+      border: 1px solid #fcc;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #c00;
+      display: none;
+    }
+
+    .success {
+      margin-top: 8px;
+      padding: 8px;
+      background: #efe;
+      border: 1px solid #cfc;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #060;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h2>🌍 텍스트 번역</h2>
+
+  <div class="form-group">
+    <label for="api-key">Gemini API Key</label>
+    <input type="password" id="api-key" placeholder="API 키를 입력하세요">
+  </div>
+
+  <div class="form-group">
+    <label for="target-language">번역할 언어</label>
+    <select id="target-language">
+      <option value="ko">한국어 (Korean)</option>
+      <option value="en">영어 (English)</option>
+      <option value="ja">일본어 (Japanese)</option>
+      <option value="zh-CN">중국어 간체 (Chinese Simplified)</option>
+      <option value="zh-TW">중국어 번체 (Chinese Traditional)</option>
+      <option value="es">스페인어 (Spanish)</option>
+      <option value="fr">프랑스어 (French)</option>
+      <option value="de">독일어 (German)</option>
+      <option value="it">이탈리아어 (Italian)</option>
+      <option value="pt">포르투갈어 (Portuguese)</option>
+      <option value="ru">러시아어 (Russian)</option>
+      <option value="ar">아랍어 (Arabic)</option>
+      <option value="hi">힌디어 (Hindi)</option>
+      <option value="th">태국어 (Thai)</option>
+      <option value="vi">베트남어 (Vietnamese)</option>
+    </select>
+  </div>
+
+  <button id="translate-btn">번역하기</button>
+
+  <div class="error" id="error-message"></div>
+  <div class="success" id="success-message"></div>
+
+  <div class="info">
+    💡 <strong>사용 방법:</strong><br>
+    1. Gemini API 키를 입력하세요<br>
+    2. 번역할 언어를 선택하세요<br>
+    3. 피그마에서 프레임을 선택하세요<br>
+    4. '번역하기' 버튼을 클릭하세요
+  </div>
+
+  <script>
+    const apiKeyInput = document.getElementById('api-key');
+    const targetLanguageSelect = document.getElementById('target-language');
+    const translateBtn = document.getElementById('translate-btn');
+    const errorMessage = document.getElementById('error-message');
+    const successMessage = document.getElementById('success-message');
+
+    // Load saved API key from local storage
+    const savedApiKey = localStorage.getItem('gemini-api-key');
+    if (savedApiKey) {
+      apiKeyInput.value = savedApiKey;
+    }
+
+    // Save API key when it changes
+    apiKeyInput.addEventListener('change', () => {
+      localStorage.setItem('gemini-api-key', apiKeyInput.value);
+    });
+
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
+      successMessage.style.display = 'none';
+    }
+
+    function showSuccess(message) {
+      successMessage.textContent = message;
+      successMessage.style.display = 'block';
+      errorMessage.style.display = 'none';
+    }
+
+    function hideMessages() {
+      errorMessage.style.display = 'none';
+      successMessage.style.display = 'none';
+    }
+
+    translateBtn.addEventListener('click', () => {
+      const apiKey = apiKeyInput.value.trim();
+      const targetLanguage = targetLanguageSelect.value;
+
+      hideMessages();
+
+      if (!apiKey) {
+        showError('API 키를 입력해주세요');
+        return;
+      }
+
+      // Disable button and show loading state
+      translateBtn.disabled = true;
+      translateBtn.textContent = '번역 중...';
+
+      // Send message to plugin code
+      parent.postMessage({
+        pluginMessage: {
+          type: 'translate',
+          apiKey: apiKey,
+          targetLanguage: targetLanguage
+        }
+      }, '*');
+    });
+
+    // Listen for messages from plugin code
+    window.onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+
+      if (msg.type === 'translation-complete') {
+        translateBtn.disabled = false;
+        translateBtn.textContent = '번역하기';
+        showSuccess(`✅ ${msg.count}개의 텍스트가 번역되었습니다!`);
+      } else if (msg.type === 'translation-error') {
+        translateBtn.disabled = false;
+        translateBtn.textContent = '번역하기';
+        showError(`❌ 오류: ${msg.error}`);
+      } else if (msg.type === 'no-selection') {
+        translateBtn.disabled = false;
+        translateBtn.textContent = '번역하기';
+        showError('⚠️ 프레임을 선택해주세요');
+      }
+    };
+  </script>
+</body>
+</html>

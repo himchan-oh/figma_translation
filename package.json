@@ -1,0 +1,22 @@
+{
+  "name": "figma-translation-plugin",
+  "version": "1.0.0",
+  "description": "Figma plugin to translate text in frames using Gemini API",
+  "main": "code.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "keywords": [
+    "figma",
+    "plugin",
+    "translation",
+    "gemini"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.90.0",
+    "typescript": "^5.3.3"
+  }
+}
