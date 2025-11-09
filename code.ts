@@ -73,8 +73,10 @@ ${text}`;
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
 
   console.log(`[Translation] Translating to ${languageName}: "${text.substring(0, 50)}..."`);
+  console.log(`[Translation] API URL: ${url.substring(0, 80)}...`);
 
   try {
+    console.log('[Translation] Sending fetch request...');
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -94,6 +96,7 @@ ${text}`;
         }
       })
     });
+    console.log('[Translation] Fetch request completed, status:', response.status);
 
     if (!response.ok) {
       const errorData = await response.text();
@@ -115,7 +118,13 @@ ${text}`;
       throw new Error('Invalid response from Gemini API');
     }
   } catch (error) {
-    console.error('[Translation Error]', error);
+    console.error('[Translation Error] Caught exception');
+    console.error('[Translation Error] Error type:', error.constructor.name);
+    console.error('[Translation Error] Error message:', error.message);
+    console.error('[Translation Error] Full error:', error);
+    if (error.stack) {
+      console.error('[Translation Error] Stack:', error.stack);
+    }
     throw new Error(`Translation failed: ${error.message}`);
   }
 }
@@ -228,10 +237,6 @@ async function translateSelection(targetLanguage: string) {
     if (allTextNodes.length === 0) {
       console.error('[Text Nodes] No text nodes found in cloned nodes');
       figma.notify('⚠️ 선택한 영역에 텍스트가 없습니다.', { error: true });
-      // Delete clones if no text found
-      for (const clone of clonedNodes) {
-        clone.remove();
-      }
       return;
     }
 
@@ -267,7 +272,13 @@ async function translateSelection(targetLanguage: string) {
         // Add a small delay to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, 500));
       } catch (error) {
-        console.error(`[Error] Failed to translate: "${originalText}"`, error);
+        console.error(`[Error] Failed to translate: "${originalText}"`);
+        console.error('[Error] Error type:', error.constructor.name);
+        console.error('[Error] Error message:', error.message);
+        console.error('[Error] Full error:', error);
+        if (error.stack) {
+          console.error('[Error] Stack trace:', error.stack);
+        }
         errorCount++;
         // Continue with other nodes even if one fails
       }
@@ -284,12 +295,10 @@ async function translateSelection(targetLanguage: string) {
       figma.notify(message);
       console.log(`[Complete] ${translatedCount} translated, ${errorCount} failed`);
     } else {
-      figma.notify('❌ 텍스트 번역에 실패했습니다. Console을 확인해주세요.', { error: true });
-      console.error('[Failed] No texts were translated');
-      // Delete clones if all translations failed
-      for (const clone of clonedNodes) {
-        clone.remove();
-      }
+      figma.notify('❌ 모든 텍스트 번역에 실패했습니다. Console을 확인해주세요.', { error: true });
+      console.error('[Failed] No texts were translated. Total errors:', errorCount);
+      console.error('[Failed] Check the console logs above for detailed error messages');
+      // Keep clones for debugging - do not delete
     }
 
   } catch (error) {
