@@ -20,16 +20,23 @@ const languageNames: { [key: string]: string } = {
 };
 
 // Recursively find all text nodes in a node
-function findAllTextNodes(node: SceneNode): TextNode[] {
+function findAllTextNodes(node: SceneNode, depth: number = 0): TextNode[] {
   const textNodes: TextNode[] = [];
+  const indent = '  '.repeat(depth);
+
+  console.log(`${indent}[FindText] Checking node: ${node.name} (type: ${node.type})`);
 
   if (node.type === 'TEXT') {
-    textNodes.push(node);
+    const textNode = node as TextNode;
+    console.log(`${indent}[FindText] ✓ Found TEXT node: "${textNode.characters}"`);
+    textNodes.push(textNode);
   }
 
   if ('children' in node) {
-    for (const child of node.children) {
-      textNodes.push(...findAllTextNodes(child));
+    const childCount = (node as ChildrenMixin).children.length;
+    console.log(`${indent}[FindText] Node has ${childCount} children`);
+    for (const child of (node as ChildrenMixin).children) {
+      textNodes.push(...findAllTextNodes(child, depth + 1));
     }
   }
 
