@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Figma Translation Plugin</title>
+  <title>Translation Settings</title>
   <style>
     * {
       box-sizing: border-box;
@@ -10,17 +10,23 @@
 
     body {
       margin: 0;
-      padding: 16px;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      padding: 20px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-size: 12px;
       color: #333;
       background: #fff;
     }
 
     h2 {
-      margin: 0 0 16px 0;
+      margin: 0 0 8px 0;
       font-size: 14px;
       font-weight: 600;
+    }
+
+    .subtitle {
+      margin: 0 0 20px 0;
+      font-size: 11px;
+      color: #666;
     }
 
     .form-group {
@@ -34,176 +40,215 @@
       color: #333;
     }
 
-    input, select {
+    input {
       width: 100%;
-      padding: 8px;
+      padding: 8px 10px;
       border: 1px solid #ddd;
       border-radius: 4px;
       font-size: 12px;
-      font-family: inherit;
+      font-family: 'Monaco', 'Courier New', monospace;
     }
 
-    input:focus, select:focus {
+    input:focus {
       outline: none;
       border-color: #18a0fb;
+      box-shadow: 0 0 0 2px rgba(24, 160, 251, 0.1);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 20px;
     }
 
     button {
-      width: 100%;
+      flex: 1;
       padding: 10px;
-      background: #18a0fb;
-      color: white;
       border: none;
       border-radius: 4px;
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: all 0.2s;
     }
 
-    button:hover {
+    .btn-primary {
+      background: #18a0fb;
+      color: white;
+    }
+
+    .btn-primary:hover {
       background: #0d8ce8;
     }
 
-    button:active {
+    .btn-primary:active {
       background: #0c7dd1;
     }
 
-    button:disabled {
+    .btn-primary:disabled {
       background: #ccc;
       cursor: not-allowed;
     }
 
-    .info {
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+
+    .message {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      display: none;
+    }
+
+    .message.error {
+      background: #fee;
+      border: 1px solid #fcc;
+      color: #c00;
+    }
+
+    .message.success {
+      background: #efe;
+      border: 1px solid #cfc;
+      color: #060;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .info-box {
       margin-top: 16px;
       padding: 12px;
-      background: #f0f0f0;
+      background: #f8f9fa;
       border-radius: 4px;
       font-size: 11px;
       color: #666;
+      line-height: 1.5;
     }
 
-    .error {
-      margin-top: 8px;
-      padding: 8px;
-      background: #fee;
-      border: 1px solid #fcc;
-      border-radius: 4px;
-      font-size: 11px;
-      color: #c00;
-      display: none;
+    .info-box a {
+      color: #18a0fb;
+      text-decoration: none;
     }
 
-    .success {
-      margin-top: 8px;
-      padding: 8px;
-      background: #efe;
-      border: 1px solid #cfc;
-      border-radius: 4px;
-      font-size: 11px;
-      color: #060;
-      display: none;
+    .info-box a:hover {
+      text-decoration: underline;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .status.configured {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status.not-configured {
+      background: #fff3cd;
+      color: #856404;
     }
   </style>
 </head>
 <body>
-  <h2>🌍 텍스트 번역</h2>
+  <h2>⚙️ Translation Settings</h2>
+  <p class="subtitle">Configure your Gemini API key for translations</p>
 
   <div class="form-group">
-    <label for="api-key">Gemini API Key</label>
-    <input type="password" id="api-key" placeholder="API 키를 입력하세요">
+    <label for="api-key">
+      Gemini API Key
+      <span class="status not-configured" id="status">Not Configured</span>
+    </label>
+    <input
+      type="password"
+      id="api-key"
+      placeholder="Enter your Gemini API key"
+      autocomplete="off"
+    >
   </div>
 
-  <div class="form-group">
-    <label for="target-language">번역할 언어</label>
-    <select id="target-language">
-      <option value="ko">한국어 (Korean)</option>
-      <option value="en">영어 (English)</option>
-      <option value="ja">일본어 (Japanese)</option>
-      <option value="zh-CN">중국어 간체 (Chinese Simplified)</option>
-      <option value="zh-TW">중국어 번체 (Chinese Traditional)</option>
-      <option value="es">스페인어 (Spanish)</option>
-      <option value="fr">프랑스어 (French)</option>
-      <option value="de">독일어 (German)</option>
-      <option value="it">이탈리아어 (Italian)</option>
-      <option value="pt">포르투갈어 (Portuguese)</option>
-      <option value="ru">러시아어 (Russian)</option>
-      <option value="ar">아랍어 (Arabic)</option>
-      <option value="hi">힌디어 (Hindi)</option>
-      <option value="th">태국어 (Thai)</option>
-      <option value="vi">베트남어 (Vietnamese)</option>
-    </select>
+  <div class="button-group">
+    <button class="btn-secondary" id="cancel-btn">Cancel</button>
+    <button class="btn-primary" id="save-btn">Save API Key</button>
   </div>
 
-  <button id="translate-btn">번역하기</button>
+  <div class="message" id="message"></div>
 
-  <div class="error" id="error-message"></div>
-  <div class="success" id="success-message"></div>
-
-  <div class="info">
-    💡 <strong>사용 방법:</strong><br>
-    1. Gemini API 키를 입력하세요<br>
-    2. 번역할 언어를 선택하세요<br>
-    3. 피그마에서 프레임을 선택하세요<br>
-    4. '번역하기' 버튼을 클릭하세요
+  <div class="info-box">
+    <strong>💡 How to get an API key:</strong><br>
+    1. Visit <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a><br>
+    2. Sign in with your Google account<br>
+    3. Click "Create API Key"<br>
+    4. Copy and paste it here
   </div>
 
   <script>
     const apiKeyInput = document.getElementById('api-key');
-    const targetLanguageSelect = document.getElementById('target-language');
-    const translateBtn = document.getElementById('translate-btn');
-    const errorMessage = document.getElementById('error-message');
-    const successMessage = document.getElementById('success-message');
+    const saveBtn = document.getElementById('save-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const messageDiv = document.getElementById('message');
+    const statusSpan = document.getElementById('status');
 
-    // Load saved API key from local storage
-    const savedApiKey = localStorage.getItem('gemini-api-key');
-    if (savedApiKey) {
-      apiKeyInput.value = savedApiKey;
+    function showMessage(text, isError = false) {
+      messageDiv.textContent = text;
+      messageDiv.className = 'message show ' + (isError ? 'error' : 'success');
     }
 
-    // Save API key when it changes
-    apiKeyInput.addEventListener('change', () => {
-      localStorage.setItem('gemini-api-key', apiKeyInput.value);
-    });
-
-    function showError(message) {
-      errorMessage.textContent = message;
-      errorMessage.style.display = 'block';
-      successMessage.style.display = 'none';
+    function hideMessage() {
+      messageDiv.className = 'message';
     }
 
-    function showSuccess(message) {
-      successMessage.textContent = message;
-      successMessage.style.display = 'block';
-      errorMessage.style.display = 'none';
+    function updateStatus(hasKey) {
+      if (hasKey) {
+        statusSpan.textContent = '✓ Configured';
+        statusSpan.className = 'status configured';
+      } else {
+        statusSpan.textContent = 'Not Configured';
+        statusSpan.className = 'status not-configured';
+      }
     }
 
-    function hideMessages() {
-      errorMessage.style.display = 'none';
-      successMessage.style.display = 'none';
-    }
-
-    translateBtn.addEventListener('click', () => {
+    // Save button
+    saveBtn.addEventListener('click', () => {
       const apiKey = apiKeyInput.value.trim();
-      const targetLanguage = targetLanguageSelect.value;
 
-      hideMessages();
+      hideMessage();
 
       if (!apiKey) {
-        showError('API 키를 입력해주세요');
+        showMessage('Please enter an API key', true);
         return;
       }
 
-      // Disable button and show loading state
-      translateBtn.disabled = true;
-      translateBtn.textContent = '번역 중...';
+      // Disable button and show loading
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
 
-      // Send message to plugin code
+      // Send to plugin code
       parent.postMessage({
         pluginMessage: {
-          type: 'translate',
-          apiKey: apiKey,
-          targetLanguage: targetLanguage
+          type: 'save-api-key',
+          apiKey: apiKey
+        }
+      }, '*');
+    });
+
+    // Cancel button
+    cancelBtn.addEventListener('click', () => {
+      parent.postMessage({
+        pluginMessage: {
+          type: 'close'
         }
       }, '*');
     });
@@ -212,20 +257,22 @@
     window.onmessage = (event) => {
       const msg = event.data.pluginMessage;
 
-      if (msg.type === 'translation-complete') {
-        translateBtn.disabled = false;
-        translateBtn.textContent = '번역하기';
-        showSuccess(`✅ ${msg.count}개의 텍스트가 번역되었습니다!`);
-      } else if (msg.type === 'translation-error') {
-        translateBtn.disabled = false;
-        translateBtn.textContent = '번역하기';
-        showError(`❌ 오류: ${msg.error}`);
-      } else if (msg.type === 'no-selection') {
-        translateBtn.disabled = false;
-        translateBtn.textContent = '번역하기';
-        showError('⚠️ 프레임을 선택해주세요');
+      if (msg.type === 'init') {
+        updateStatus(msg.hasApiKey);
+      } else if (msg.type === 'success') {
+        showMessage(msg.message, false);
+        updateStatus(true);
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save API Key';
+      } else if (msg.type === 'error') {
+        showMessage(msg.message, true);
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save API Key';
       }
     };
+
+    // Auto-focus on input
+    apiKeyInput.focus();
   </script>
 </body>
 </html>

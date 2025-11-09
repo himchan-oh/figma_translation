@@ -5,6 +5,9 @@ node_modules/
 code.js
 *.js.map
 
+# Config with API key (keep this file local only)
+config.ts
+
 # IDE
 .vscode/
 .idea/

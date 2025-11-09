@@ -1,13 +1,31 @@
 {
-  "name": "Figma Translation Plugin",
+  "name": "Translate Text",
   "id": "figma-translation-plugin",
   "api": "1.0.0",
   "main": "code.js",
-  "ui": "ui.html",
   "editorType": ["figma"],
   "networkAccess": {
     "allowedDomains": [
       "https://generativelanguage.googleapis.com"
     ]
-  }
+  },
+  "menu": [
+    {"name": "English", "command": "translate-en"},
+    {"name": "Korean (한국어)", "command": "translate-ko"},
+    {"name": "Japanese (日本語)", "command": "translate-ja"},
+    {"name": "Chinese Simplified (简体中文)", "command": "translate-zh-CN"},
+    {"name": "Chinese Traditional (繁體中文)", "command": "translate-zh-TW"},
+    {"name": "Spanish (Español)", "command": "translate-es"},
+    {"name": "French (Français)", "command": "translate-fr"},
+    {"name": "German (Deutsch)", "command": "translate-de"},
+    {"name": "Italian (Italiano)", "command": "translate-it"},
+    {"name": "Portuguese (Português)", "command": "translate-pt"},
+    {"name": "Russian (Русский)", "command": "translate-ru"},
+    {"name": "Arabic (العربية)", "command": "translate-ar"},
+    {"name": "Hindi (हिन्दी)", "command": "translate-hi"},
+    {"name": "Thai (ไทย)", "command": "translate-th"},
+    {"name": "Vietnamese (Tiếng Việt)", "command": "translate-vi"},
+    {"name": "---"},
+    {"name": "Settings ⚙️", "command": "settings"}
+  ]
 }
