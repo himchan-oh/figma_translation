@@ -36,6 +36,19 @@ function findAllTextNodes(node: SceneNode): TextNode[] {
   return textNodes;
 }
 
+// Clone a node and return the clone
+function cloneNode(node: SceneNode): SceneNode {
+  const clone = node.clone();
+
+  // Position the clone next to the original (offset by width + 100px)
+  if ('x' in node && 'width' in node) {
+    clone.x = node.x + node.width + 100;
+    clone.y = node.y;
+  }
+
+  return clone;
+}
+
 // Translate text using Gemini API with improved prompt
 async function translateWithGemini(
   text: string,
@@ -74,7 +87,7 @@ ${text}`;
           }]
         }],
         generationConfig: {
-          temperature: 0.2, // Lower temperature for more consistent translations
+          temperature: 0.2,
           topK: 40,
           topP: 0.95,
           maxOutputTokens: 1024,
@@ -175,31 +188,54 @@ async function translateSelection(targetLanguage: string) {
     const apiKey = await getApiKey();
 
     if (!apiKey) {
+      console.error('[API Key] No API key configured');
       figma.notify('⚠️ API 키가 설정되지 않았습니다. Settings 메뉴에서 API 키를 입력해주세요.', { error: true });
       return;
     }
+
+    console.log('[API Key] API key found, length:', apiKey.length);
 
     // Check if something is selected
     const selection = figma.currentPage.selection;
 
     if (selection.length === 0) {
+      console.error('[Selection] Nothing selected');
       figma.notify('⚠️ 텍스트를 선택하거나 프레임을 선택해주세요.', { error: true });
       return;
     }
 
-    // Collect all text nodes from selected nodes
-    const allTextNodes: TextNode[] = [];
+    console.log('[Selection] Selected nodes:', selection.length);
+
+    // Clone selected nodes
+    const clonedNodes: SceneNode[] = [];
 
     for (const node of selection) {
+      console.log(`[Clone] Cloning node: ${node.name} (${node.type})`);
+      const clone = cloneNode(node);
+      clone.name = `${node.name} (${languageNames[targetLanguage]})`;
+      clonedNodes.push(clone);
+    }
+
+    console.log(`[Clone] Created ${clonedNodes.length} clones`);
+
+    // Collect all text nodes from cloned nodes
+    const allTextNodes: TextNode[] = [];
+
+    for (const node of clonedNodes) {
       allTextNodes.push(...findAllTextNodes(node));
     }
 
     if (allTextNodes.length === 0) {
+      console.error('[Text Nodes] No text nodes found in cloned nodes');
       figma.notify('⚠️ 선택한 영역에 텍스트가 없습니다.', { error: true });
+      // Delete clones if no text found
+      for (const clone of clonedNodes) {
+        clone.remove();
+      }
       return;
     }
 
-    console.log(`[Found] ${allTextNodes.length} text nodes`);
+    console.log(`[Found] ${allTextNodes.length} text nodes in clones`);
     figma.notify(`🔄 ${allTextNodes.length}개의 텍스트를 번역 중...`);
 
     // Translate each text node
@@ -211,10 +247,12 @@ async function translateSelection(targetLanguage: string) {
 
       if (originalText.trim() === '') {
         console.log('[Skip] Empty text node');
-        continue; // Skip empty text nodes
+        continue;
       }
 
       try {
+        console.log(`[Translating] "${originalText}"`);
+
         // Translate the text
         const translatedText = await translateWithGemini(
           originalText,
@@ -235,6 +273,9 @@ async function translateSelection(targetLanguage: string) {
       }
     }
 
+    // Select the cloned nodes
+    figma.currentPage.selection = clonedNodes as SceneNode[];
+
     // Show result
     if (translatedCount > 0) {
       const message = errorCount > 0
@@ -245,6 +286,10 @@ async function translateSelection(targetLanguage: string) {
     } else {
       figma.notify('❌ 텍스트 번역에 실패했습니다. Console을 확인해주세요.', { error: true });
       console.error('[Failed] No texts were translated');
+      // Delete clones if all translations failed
+      for (const clone of clonedNodes) {
+        clone.remove();
+      }
     }
 
   } catch (error) {
@@ -255,10 +300,11 @@ async function translateSelection(targetLanguage: string) {
 
 // Handle commands
 figma.on('run', async ({ command }: RunEvent) => {
-  console.log(`[Command] ${command}`);
+  console.log(`[Command] Received command: ${command}`);
 
   // Settings command - show UI for API key input
   if (command === 'settings') {
+    console.log('[Settings] Opening settings UI');
     figma.showUI(__html__, { width: 400, height: 280 });
 
     // Send current API key status to UI
@@ -274,8 +320,11 @@ figma.on('run', async ({ command }: RunEvent) => {
   // Translation commands
   if (command && command.startsWith('translate-')) {
     const targetLanguage = command.replace('translate-', '');
+    console.log(`[Translation] Target language: ${targetLanguage}`);
     await translateSelection(targetLanguage);
     figma.closePlugin();
+  } else {
+    console.error('[Command] Unknown command:', command);
   }
 });
 
