@@ -25,7 +25,7 @@
     {"name": "Hindi (हिन्दी)", "command": "translate-hi"},
     {"name": "Thai (ไทย)", "command": "translate-th"},
     {"name": "Vietnamese (Tiếng Việt)", "command": "translate-vi"},
-    {"name": "---"},
+    {"separator": true},
     {"name": "Settings ⚙️", "command": "settings"}
   ]
 }
